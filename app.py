@@ -5,13 +5,10 @@ from io import BytesIO
 import re
 
 app = Flask(__name__)
-doc = DocxTemplate("./word-template/template.docx")
-
 
 @app.route('/')
 def index():
     return render_template('index.html')
-
 
 @app.route('/generate_paper', methods=['POST'])
 def generate_paper():
@@ -27,6 +24,7 @@ def generate_paper():
         result = []
         for line in text:
             filtered_line = match_pattern(line)
+            print(filtered_line)
             rt = RichText()
             for i in filtered_line:
                 if i.startswith('^^'):
@@ -40,15 +38,21 @@ def generate_paper():
             result.append(rt)
         return result
 
+    template = request.form.get('journal-type')
+    doc = DocxTemplate(f"./word-template/{template}.docx")
+    #doc = DocxTemplate("./word-template/JCPR - Final Template.docx")
+
     vol_inp = request.form.get('volume')
     month_inp = request.form.get('month')
     issue_inp = request.form.get('issuedate')
     issn_inp = request.form.get('issndate')
+    doi_inp = request.form.get('doi')
     title_inp = request.form.get('title')
     address_inp = request.form.get('address').split('\n')
     author_inp = request.form.get('authors')
     subdate_inp = request.form.get('sub_date')
     accdate_inp = request.form.get('acc_date')
+    revdate_inp = request.form.get('rev_date')
     abstracts_inp = request.form.get('abstract')
     keywords_inp = request.form.get("keyword")
     page_inp = request.form.get("page_no")
@@ -85,8 +89,6 @@ def generate_paper():
         sections_inp.append(section_data)
     sections_inp.append([])
 
-
-
     context = {
         "vol": vol_inp,
         "issue": issue_inp,
@@ -94,10 +96,12 @@ def generate_paper():
         "month": month_inp,
         "pp": page_inp,
         "issn": issn_inp,
+        "doi": doi_inp,
         "title": modify_text(title_inp)[0],
         "authors": modify_text(author_inp)[0],
         "sub_date": subdate_inp,
         "acc_date": accdate_inp,
+        "rev_date": revdate_inp,
         "abstract": modify_text(abstracts_inp)[0],
         "keywords": modify_text(keywords_inp)[0],
         'sections': sections_inp,
@@ -115,9 +119,6 @@ def generate_paper():
         download_name='formatter_output.docx',
         mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )
-    # doc.save("word-template-output.docx")
-    # return send_file(doc, download_name="formatter_output.docx", as_attachment=True)
-
 
 if __name__ == '__main__':
     app.run(debug=True)

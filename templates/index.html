@@ -84,10 +84,18 @@
   </video>
   <div class="container">
     <h2>Create Journal Paper</h2>
-    <form action="/generate_paper" method="post" enctype="multipart/form-data"> 
-    <!--<form action="/generate_paper" method="post"> -->
+    <form action="/generate_paper" method="post" enctype="multipart/form-data">
+    <label for="journal-type">Journal Type:</label>
+      <select name="journal-type" id="journal-type" required>
+        <option value="IJMAR-template">IJMAR-template</option>
+        <option value="IJPPR-template">IJPPR-template</option>
+        <option value="JCPR-template">JCPR-template</option>
+        <option value="IJSRM-template">IJSRM-template</option>
+        <!-- Add more options as needed -->
+      </select>
+
       <input type="hidden" name="sectionIndex" id="sectionIndex" value="0">
-      
+
       <div class="form-group">
         <label for="title">Title:</label>
         <input type="text" name="title" id="title" required>
@@ -102,7 +110,7 @@
         <label for="issuedate">Issue Date:</label>
         <input type="number" name="issuedate" id="issuedate" required>
       </div>
-      
+
       <div class="form-group">
         <label for="month">Month_Year:</label>
         <input type="month" name="month" id="month" required style="width: 200px;">
@@ -117,11 +125,16 @@
         <input type="value" name="issndate" id="issndate" required>
       </div>
 
+       <div class="form-group">
+        <label for="doi">DOI:</label>
+        <input type="date" name="doi" id="doi">
+      </div>
+
       <div class="form-group">
         <label for="authors">Authors:</label>
         <input type="text" name="authors" id="authors" required>
       </div>
-     
+
     <div class="form-group">
         <label for="address">Address:</label>
         <textarea name="address" id="address" required></textarea>
@@ -130,6 +143,12 @@
         <label for="sub_date">Submission Date:</label>
         <input type="date" name="sub_date" id="sub_date" required>
       </div>
+
+      <div class="form-group">
+        <label for="rev_date">Revised Date:</label>
+        <input type="date" name="rev_date" id="rev_date">
+      </div>
+
       <div class="form-group">
         <label for="acc_date">Acceptance Date:</label>
         <input type="date" name="acc_date" id="acc_date" required>
@@ -143,7 +162,7 @@
         <input type="text" name ="keyword" id="keyword" required>
       </div>
 
-     
+
       <div class="form-group" id="section-container">
         <button type="button" id="add-section-button">Add Section</button>
       </div>
@@ -168,7 +187,7 @@
     const sectionsContainer = document.getElementById("sections");
     const imageUploadInput = document.getElementById("image-upload");
 
-    let sectionIndex = 1;
+    let sectionIndex = 0;
 
     addSectionButton.addEventListener("click", function(e) {
       e.preventDefault();
@@ -178,40 +197,40 @@
       // Hidden input field to store fieldIndex
       const fieldIndexInput = document.createElement("input");
       fieldIndexInput.type = "hidden";
-      fieldIndexInput.name = `field_index_${sectionIndex}`;
+      fieldIndexInput.name = `field_index_${sectionIndex + 1}`;
       fieldIndexInput.value = 0; // Initial value for fieldIndex
       sectionDiv.appendChild(fieldIndexInput);
 
       // Hidden input field to store element types (table or input)
       const elementTypeInput = document.createElement("input");
       elementTypeInput.type = "hidden";
-      elementTypeInput.name = `element_type_${sectionIndex}`;
+      elementTypeInput.name = `element_type_${sectionIndex + 1}`;
       elementTypeInput.value = "None"; // Initial value for element types
       sectionDiv.appendChild(elementTypeInput);
 
       const sectionTitleInput = document.createElement("input");
       sectionTitleInput.type = "text";
-      sectionTitleInput.name = `section_title_${sectionIndex}`;
-      sectionTitleInput.id = `section_title_${sectionIndex}`;
+      sectionTitleInput.name = `section_title_${sectionIndex + 1}`;
+      sectionTitleInput.id = `section_title_${sectionIndex + 1}`;
       sectionTitleInput.value = "";
       sectionTitleInput.placeholder = "Section Title";
       sectionTitleInput.required = true;
       sectionTitleInput.style.marginBottom = "10px";
 
       const sectionContentInput = document.createElement("textarea");
-      sectionContentInput.name = `section_content_${sectionIndex}`;
-      sectionContentInput.id = `section_content_${sectionIndex}`;
+      sectionContentInput.name = `section_content_${sectionIndex + 1}`;
+      sectionContentInput.id = `section_content_${sectionIndex + 1}`;
       sectionContentInput.value = "";
       sectionContentInput.placeholder = "Section Content";
       sectionContentInput.rows = 4;
       sectionContentInput.required = true;
 
-      const sectionImageInput = document.createElement("input");
+      /*const sectionImageInput = document.createElement("input");
       sectionImageInput.type = "file";
       sectionImageInput.name = `section_image_${sectionIndex}_field_1`;
       sectionImageInput.id = `section_image_${sectionIndex}_field_1`;
       sectionImageInput.style.display = "none";
-      sectionImageInput.accept = "image/*";
+      sectionImageInput.accept = "image/*";*/
 
       //-----------------------Dyanmic Image Upload-----------------------
       const addImageBtn = document.createElement("button");
@@ -227,9 +246,9 @@
           // Create the input element for file input
           const imageInput = document.createElement("input");
           imageInput.type = "file";
-          const imageFieldName = `section_image_${sectionIndex - 1}_${currentFieldIndex + 1}`;
+          const imageFieldName = `section_image_${sectionIndex}_${currentFieldIndex + 1}`;
           imageInput.name = imageFieldName;
-          imageInput.id = `section_image_${sectionIndex - 1}_${currentFieldIndex + 1}`;
+          imageInput.id = `section_image_${sectionIndex}_${currentFieldIndex + 1}`;
           imageInput.accept = "image/*";
           imageInput.style.display = "none";
 
@@ -285,8 +304,6 @@
           form.appendChild(imagePreview);
         });
 
-
-
       //-----------------------Dyanmic Table Upload-----------------------
       const sectionTableButton = document.createElement("button");
       sectionTableButton.type = "button";
@@ -294,9 +311,9 @@
       sectionTableButton.addEventListener("click", function() {
         const currentFieldIndex = parseInt(fieldIndexInput.value, 10);
         const sectionTableTextarea = document.createElement("textarea");
-        const tableFieldName = `section_table_${sectionIndex-1}_${currentFieldIndex + 1}`;
+        const tableFieldName = `section_table_${sectionIndex}_${currentFieldIndex + 1}`;
         sectionTableTextarea.name = tableFieldName;
-        sectionTableTextarea.id = `section_table_${sectionIndex-1}_${currentFieldIndex + 1}`;
+        sectionTableTextarea.id = `section_table_${sectionIndex}_${currentFieldIndex + 1}`;
         sectionTableTextarea.value = "";
         sectionTableTextarea.placeholder = "Table Text";
         sectionTableTextarea.rows = 4;
@@ -338,131 +355,9 @@
     // Display the file name in the drag-and-drop area
     dropLabel.textContent = `Image: ${fileName}`;
 
-    // Update the image input with the selected file
-    const formData = new FormData();
-    formData.append('image', files[0]); // 'image' should match the name attribute of your file input
-    imageInput.files = formData;
-
     // If you need to preview the image, you can do it here
     // For example, you can create a preview image and append it to the dropContainer
   }
 }
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </html>
-<!--
-  /*
-  document.addEventListener("DOMContentLoaded", function() {
-    const addSectionButton = document.getElementById("add-section-button");
-    const sectionsContainer = document.getElementById("sections");
-    const imageUploadInput = document.getElementById("image-upload");
-
-    let sectionIndex = 1;
-
-    addSectionButton.addEventListener("click", function(e) {
-      e.preventDefault();
-      const sectionDiv = document.createElement("div");
-      sectionDiv.className = "form-group";
-
-      const sectionTitleInput = document.createElement("input");
-      sectionTitleInput.type = "text";
-      sectionTitleInput.name = `section_title_${sectionIndex}`;
-      sectionTitleInput.id = `section_title_${sectionIndex}`;
-      sectionTitleInput.value = "";
-      sectionTitleInput.placeholder = "Section Title";
-      sectionTitleInput.required = true;
-      sectionTitleInput.style.marginBottom = "10px";
-
-      const sectionContentInput = document.createElement("textarea");
-      sectionContentInput.name = `section_content_${sectionIndex}`;
-      sectionContentInput.id = `section_content_${sectionIndex}`;
-      sectionContentInput.value = "";
-      sectionContentInput.placeholder = "Section Content";
-      sectionContentInput.rows = 4;
-      sectionContentInput.required = true;
-
-      const sectionImageInput = document.createElement("input");
-      sectionImageInput.type = "file";
-      sectionImageInput.name = `section_image_${sectionIndex}`;
-      sectionImageInput.id = `section_image_${sectionIndex}`;
-      sectionImageInput.style.display = "none";
-      sectionImageInput.accept = "image/*";
-
-      const sectionImageUploadButton = document.createElement("button");
-      sectionImageUploadButton.type = "button";
-      sectionImageUploadButton.textContent = "Upload Image";
-      sectionImageUploadButton.addEventListener("click", function() {
-        sectionImageInput.click();
-      });
-
-      const sectionTableButton = document.createElement("button");
-      sectionTableButton.type = "button";
-      sectionTableButton.textContent = "Add Table";
-      sectionTableButton.addEventListener("click", function() {
-        const sectionTableTextarea = document.createElement("textarea");
-        sectionTableTextarea.name = `section_table_${sectionIndex}`;
-        sectionTableTextarea.id = `section_table_${sectionIndex}`;
-        sectionTableTextarea.value = "";
-        sectionTableTextarea.placeholder = "Table Text";
-        sectionTableTextarea.rows = 4;
-        sectionTableTextarea.required = true;
-        sectionTableTextarea.style.marginTop = "10px";
-
-        sectionDiv.appendChild(sectionTableTextarea);
-      });
-
-      const sectionImagetoButton= document.createElement("button");
-        sectionImagetoButton.type = "button";
-        sectionImagetoButton.textContent = "Add Image2";
-        sectionImagetoButton.addEventListener("click", function() {
-        const sectionTableTextarea1 = document.createElement("textarea");
-        sectionTableTextarea1.name = `section_table_${sectionIndex}`;
-        sectionTableTextarea1.id = `section_table_${sectionIndex}`;
-        sectionTableTextarea1.value = "";
-        sectionTableTextarea1.placeholder = "ADD Image";
-        sectionTableTextarea1.rows = 4;
-        sectionTableTextarea1.required = true;
-        sectionTableTextarea1.style.marginTop = "10px";
-        sectionDiv.appendChild(sectionTableTextarea1);
-       
-      });
-      sectionDiv.appendChild(sectionTitleInput);
-      sectionDiv.appendChild(sectionContentInput);
-      sectionDiv.appendChild(sectionImageInput);
-      sectionDiv.appendChild(sectionImageUploadButton);
-      sectionDiv.appendChild(sectionTableButton);
-      sectionDiv.appendChild(sectionImagetoButton);
-
-      sectionsContainer.appendChild(sectionDiv);
-
-      sectionIndex++;
-      document.getElementById("sectionIndex").value = sectionIndex;
-    });
-
-    imageUploadInput.addEventListener("change", function(event) {
-      const fileInput = event.target;
-      if (fileInput.files.length > 0) {
-        const fileName = fileInput.files[0].name;
-        // You can display the selected file name or any other relevant information as needed.
-        // For example, you can display it in a label or span element.
-      }
-    });
-  });
--->
