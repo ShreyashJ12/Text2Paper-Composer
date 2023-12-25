@@ -2,10 +2,12 @@ from flask import Flask, render_template, request, send_file, redirect, url_for
 from docxtpl import DocxTemplate, InlineImage, RichText
 from docx.shared import Mm
 from io import BytesIO
+from flask_toastr import Toastr
 import pyrebase
 import re
 
 app = Flask(__name__)
+toast = Toastr(app)
 
 #----------------------Firebase Configuration----------------------#
 config = {
