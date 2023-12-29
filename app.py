@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file, redirect, url_for
+from flask import Flask, render_template, request, send_file, redirect, url_for, flash
 from docxtpl import DocxTemplate, InlineImage, RichText
 from docx.shared import Mm
 from io import BytesIO
@@ -7,6 +7,10 @@ import pyrebase
 import re
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'sprdevelopwithyou'
+app.config['TOASTR_CLOSE_BUTTON'] = 'false'
+app.config['TOASTR_TIMEOUT'] = 3000
+app.config['TOASTR_EXTENDED_TIMEOUT'] = 2000
 toast = Toastr(app)
 
 #----------------------Firebase Configuration----------------------#
@@ -25,6 +29,11 @@ db = firebase.database()
 #----------------------person who's logged in----------------------#
 person = {"is_logged_in": False, "name": "", "email": "", "uid": ""}
 
+@app.after_request
+def after_request(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return response
+
 #Signin Page
 @app.route('/')
 def signin():
@@ -39,7 +48,7 @@ def signup():
 @app.route('/home')
 def home():
     if person['is_logged_in']:
-        return render_template('index.html')
+        return render_template('index.html', name = person['name'])
     else:
         return redirect(url_for('signin'))
 
@@ -63,8 +72,9 @@ def result():
 
             #redirect to the index page
             return redirect(url_for("home"))
-        except:
+        except Exception as e:
             #if any errors
+            flash({'title': "Invalid credentials", 'message': "Please check your email and password"}, 'warning')
             return redirect(url_for('signin'))
     else:
         if person['is_logged_in']:
@@ -79,11 +89,18 @@ def register():
         result = request.form
         register_code = "4346"
         if result['regcode'] != register_code:
+            print('Hey')
+            flash({'title': "Invalid code", 'message': "Please enter a valid registration code"}, 'warning')
             return redirect(url_for('signup'))
         else:
             email = result['email']
             password = result['pass']
             name = result['name']
+            all_users = db.child("users").get()
+            for user in all_users.each():
+                if 'email' in user.val() and user.val()['email'] == email:
+                    flash({'title': "Error", 'message': "This email is already registered"}, 'error')
+                    return redirect(url_for('signup'))
             try:
                 auth.create_user_with_email_and_password(email, password)
                 user = auth.sign_in_with_email_and_password(email, password)
@@ -97,12 +114,29 @@ def register():
 
                 return redirect(url_for('home'))
             except Exception as e:
+                flash({'title': "Error", 'message': "Something is wrong, please try again"}, 'warning')
                 return redirect(url_for('signup'))
     else:
         if person['is_logged_in']:
+            flash({'title': "Logged in", 'message': "You are logged in"}, 'success')
             return render_template('index.html')
         else:
-            return redirect(url_for('register'))        
+            flash({'title': "Error", 'message': "Something is wrong, please try again"}, 'warning')
+            return redirect(url_for('register'))
+                
+@app.route('/signout', methods=['GET'])
+def signout():
+    try:
+        auth.current_user = None
+        person['is_logged_in'] = False
+        person['email'] = ''
+        person['name'] = ''
+        person['uid'] = ''
+        flash({'title': "Logged out", 'message': "You have been logged out"}, 'success')
+        return redirect(url_for('signin'))
+    except Exception as e:
+        print(e)
+
 
 @app.route('/generate_paper', methods=['POST'])
 def generate_paper():
@@ -210,6 +244,7 @@ def generate_paper():
     output_stream = BytesIO()
     doc.save(output_stream)
     output_stream.seek(0)
+    flash({'title': "Success", 'message': "Your paper has been generated"}, 'success')
     return send_file(
         output_stream,
         as_attachment=True,

@@ -6,6 +6,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create Journal Paper</title>
   <style>
+     /* Style the navbar */
+    #navbar {
+      overflow: hidden;
+      background-color: #333;
+    }
+
+    /* Navbar links */
+    #navbar p {
+      float: left;
+      color: #f2f2f287;
+      text-align: center;
+      text-decoration: none;
+      font-size: medium;
+    }
+
+    #navbar a {
+      float: right;
+      text-align: center;
+      padding: 16px;
+      text-decoration: none;
+      color: red;
+      font-size: medium;
+    }
+
+    /* Page content */
+    .content {
+      padding: 16px;
+    }
+
+    /* The sticky class is added to the navbar with JS when it reaches its scroll position */
+    .sticky {
+      position: fixed;
+      top: 0;
+      width: 100%;
+    }
+
+    /* Add some top padding to the page content to prevent sudden quick movement (as the navigation bar gets a new position at the top of the page (position:fixed and top:0) */
+    .sticky + .content {
+      padding-top: 60px;
+    } 
     body {
       font-family: 'Arial', sans-serif;
       margin: 0;
@@ -114,9 +154,16 @@
       margin-bottom: 20px;
     }
   </style>
+  {{ toastr.include_jquery() }}
+  {{ toastr.include_toastr_css() }}
+  {{ toastr.message() }}
 </head>
 
 <body>
+  <div id="navbar">
+    <p>Welcome, {{ name }}</p>
+    <a href="/signout">Logout</a>
+  </div> 
   <div class="container">
     <h2>Create Journal Paper</h2>
     <form action="/generate_paper" method="post" enctype="multipart/form-data">
@@ -221,10 +268,28 @@
       
     </form>
   </div>
+{{ toastr.include_toastr_js() }}
 </body>
 
 
 <script>
+    // When the user scrolls the page, execute myFunction
+  window.onscroll = function() {myFunction()};
+
+  // Get the navbar
+  var navbar = document.getElementById("navbar");
+
+  // Get the offset position of the navbar
+  var sticky = navbar.offsetTop;
+
+  // Add the sticky class to the navbar when you reach its scroll position. Remove "sticky" when you leave the scroll position
+  function myFunction() {
+    if (window.pageYOffset >= sticky) {
+      navbar.classList.add("sticky")
+    } else {
+      navbar.classList.remove("sticky");
+    }
+  } 
   document.addEventListener("DOMContentLoaded", function () {
     const addSectionButton = document.getElementById("add-section-button");
     const sectionsContainer = document.getElementById("sections");
