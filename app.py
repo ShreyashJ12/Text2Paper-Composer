@@ -240,11 +240,10 @@ def generate_paper():
     }
 
     doc.render(context)
-
+    flash({'title': "Success", 'message': "Your paper has been generated"}, 'success')
     output_stream = BytesIO()
     doc.save(output_stream)
     output_stream.seek(0)
-    flash({'title': "Success", 'message': "Your paper has been generated"}, 'success')
     return send_file(
         output_stream,
         as_attachment=True,
